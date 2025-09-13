@@ -1,48 +1,122 @@
-// Tasks
-function joinChannel(){
-  const channel="@YourChannel";
-  Telegram.WebApp.openLink(https://t.me/${channel.replace('@','')});
-  setTimeout(()=>{
-    balance += 10;
-    tasksDone++;
-    document.getElementById("joinStatus").innerText = "✅ Joined!";
-    updateHome();
-  },3000);
+<p>Watch ads to earn points!</p>
+    <button class="btn" onclick="watchAd(75)">▶️ Watch Ad</button>
+  </div>
+  <div class="card">
+    <img src="https://i.ibb.co/Df5v7nS/daily-bonus.png" alt="Bonus" style="width:100%;border-radius:10px;">
+    <p>🎁 Daily Bonus</p>
+    <button class="btn" onclick="claimDailyBonus()">Claim Bonus</button>
+  </div>
+</div>
+
+<!-- Leaderboard Section -->
+<div id="leaderboard" class="section">
+  <h2>🏆 Leaderboard</h2>
+  <ul class="leaderboard-list" id="leaderboardList"></ul>
+</div>
+
+<!-- Referrals Section -->
+<div id="referral" class="section">
+  <h2>🔗 Referrals</h2>
+  <div class="card">
+    <p>Your referral code: <span id="refCode">ABC123</span></p>
+    <p>Invite friends and earn rewards!</p>
+  </div>
+  <ul class="referral-list" id="referralList">
+    <li>No referrals yet.</li>
+  </ul>
+</div>
+
+<!-- Withdraw Section -->
+<div id="withdraw" class="section">
+  <h2>🏧 Withdraw</h2>
+  <div class="card">
+    <label>USDT TRC-20 Wallet:</label>
+    <input type="text" id="walletAddress" placeholder="Enter wallet address">
+    <button class="btn" onclick="withdrawPoints()">💸 Withdraw</button>
+  </div>
+</div>
+
+<nav>
+  <button onclick="showSection('home')"><span>🏠</span>Home</button>
+  <button onclick="showSection('tasks')"><span>📋</span>Tasks</button>
+  <button onclick="showSection('leaderboard')"><span>🏆</span>Leaderboard</button>
+  <button onclick="showSection('referral')"><span>🔗</span>Referrals</button>
+  <button onclick="showSection('withdraw')"><span>🏧</span>Withdraw</button>
+</nav>
+
+<script>
+const sections = document.querySelectorAll('.section');
+function showSection(id) {
+  sections.forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function watchAd(points){
-  if(typeof show_9754867 !== 'function'){
-    alert("Ad system not ready");
-    return;
+// User Data
+let balance = parseInt(localStorage.getItem('balance')) || 0;
+let tasksDone = parseInt(localStorage.getItem('tasksDone')) || 0;
+let referrals = parseInt(localStorage.getItem('referrals')) || 0;
+
+// Mining
+let miningStatus = "idle";
+let miningInterval = null;
+let miningEndTime = null;
+const MINING_DURATION = 5*60; // 5 minutes for first time
+const MINING_POINTS = 75;
+
+function updateHome() {
+  document.getElementById('balance').innerText = balance;
+  document.getElementById('tasksDone').innerText = tasksDone;
+  document.getElementById('referrals').innerText = referrals;
+  localStorage.setItem('balance', balance);
+  localStorage.setItem('tasksDone', tasksDone);
+  localStorage.setItem('referrals', referrals);
+}
+
+// First-time mining
+if(!localStorage.getItem('firstTime')) {
+  startMining();
+  localStorage.setItem('firstTime', 'true');
+}
+
+function startMining() {
+  if(miningStatus !== "idle") return;
+  miningStatus = "mining";
+  miningEndTime = Date.now() + MINING_DURATION*1000;
+  document.getElementById('startMiningBtn').style.display = 'none';
+  document.getElementById('claimMiningBtn').style.display = 'inline-block';
+  miningInterval = setInterval(miningCountdown, 1000);
+}
+
+function miningCountdown() {
+  let remaining = Math.max(0, Math.floor((miningEndTime - Date.now())/1000));
+  let minutes = Math.floor(remaining/60);
+  let seconds = remaining % 60;
+  document.getElementById('miningTimer').innerText = ⏳ ${minutes}:${seconds.toString().padStart(2,'0')} remaining;
+  generateSparks();
+  if(remaining <= 0) {
+    clearInterval(miningInterval);
+    document.getElementById('miningTimer').innerText = "Mining done! Claim reward.";
   }
-  show_9754867('reward').then(()=>{
-    balance += points;
-    tasksDone++;
-    updateHome();
-  }).catch(()=>alert("Ad failed"));
 }
 
-function claimDailyBonus(){
-  const today=new Date().toDateString();
-  if(localStorage.getItem("dailyBonus")==today){alert("Already claimed today"); return;}
-  const bonus = Math.floor(Math.random()*300)+100;
-  balance += bonus;
+function generateSparks() {
+  const sparksDiv = document.getElementById('sparks');
+  sparksDiv.innerHTML = '';
+  for(let i=0;i<5;i++){
+    let spark = document.createElement('div');
+    spark.className = 'spark';
+    spark.style.left = Math.random()*100 + '%';
+    spark.style.bottom = Math.random()*50 + 'px';
+    sparksDiv.appendChild(spark);
+  }
+}
+
+function claimMining() {
+  balance += MINING_POINTS;
   tasksDone++;
-  localStorage.setItem("dailyBonus", today);
-  alert(🎁 Daily Bonus: ${bonus} coins!);
+  miningStatus = 'idle';
+  document.getElementById('startMiningBtn').style.display = 'inline-block';
+  document.getElementById('claimMiningBtn').style.display = 'none';
+  document.getElementById('miningTimer').innerText = '';
   updateHome();
 }
-
-function withdrawPoints(){
-  const wallet=document.getElementById("walletAddress").value.trim();
-  if(!wallet){alert("Enter wallet address"); return;}
-  if(balance<1000){alert("Minimum 1000 coins required"); return;}
-  alert(✅ Withdraw request of ${balance} coins sent to ${wallet});
-  balance = 0;
-  updateHome();
-}
-
-updateHome();
-</script>
-</body>
-</html>
