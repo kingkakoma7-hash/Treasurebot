@@ -1,135 +1,48 @@
-function renderLeaderboard() {
-      // Example leaderboard data
-      const leaderboard = [
-        {
-          name: "Alice",
-          points: 1500,
-          avatar: "https://randomuser.me/api/portraits/women/1.jpg"
-        },
-        {
-          name: "Bob",
-          points: 1000,
-          avatar: "https://randomuser.me/api/portraits/men/2.jpg"
-        },
-        {
-          name: "You",
-          points: balance,
-          avatar: "https://randomuser.me/api/portraits/men/3.jpg"
-        }
-      ];
-      const lbList = document.getElementById("leaderboardList");
-      lbList.innerHTML = "";
-
-      leaderboard.forEach((user, idx) => {
-        let li = document.createElement("li");
-        let avatarClass = "";
-        if (idx === 0) avatarClass = "gold";
-        if (idx === 1) avatarClass = "silver";
-        if (idx === 2) avatarClass = "bronze";
-        li.className = avatarClass;
-
-        let avatar = document.createElement("img");
-        avatar.src = user.avatar;
-        avatar.className = "avatar";
-        avatar.alt = user.name;
-
-        let info = document.createElement("span");
-        info.className = "info";
-        info.textContent = ${idx + 1}. ${user.name};
-
-        let points = document.createElement("span");
-        points.className = "points";
-        points.textContent = ${user.points} pts;
-
-        li.appendChild(avatar);
-        li.appendChild(info);
-        li.appendChild(points);
-        lbList.appendChild(li);
-      });
-    }
-
-    function updateHome() {
-      document.getElementById('balance').innerText = balance;
-      document.getElementById('tasksDone').innerText = tasksDone;
-      document.getElementById('referrals').innerText = referrals;
-      document.getElementById('balanceLb').innerText = balance;
-      renderLeaderboard();
-    }
-
-    // Task History
-    function addToHistory(item) {
-      history.push(item);
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const list = document.getElementById('historyList');
-      list.innerHTML = '';
-      if (history.length === 0) {
-        list.innerHTML = '<li>No tasks completed yet.</li>';
-      } else {
-        history.forEach(h => {
-          const li = document.createElement('li');
-          li.textContent = h;
-          list.appendChild(li);
-        });
-      }
-    }
-
-    // Withdraw History
-    function addToWithdrawHistory(item) {
-      withdrawHist.push(item);
-      // Withdraw history is not shown in UI per your request, so no rendering needed.
-    }
-
-    // Referrals
-    function addReferral(ref) {
-      refData.push(ref);
-      referrals = refData.length;
-      renderReferrals();
-      updateHome();
-    }
-
-    function renderReferrals() {
-      const list = document.getElementById('referralList');
-      list.innerHTML = '';
-      if (refData.length === 0) {
-        list.innerHTML = '<li>No referrals yet.</li>';
-      } else {
-        refData.forEach(r => {
-          const li = document.createElement('li');
-          li.textContent = r;
-          list.appendChild(li);
-        });
-      }
-    }
-
-    // Settings
-    function saveSettings() {
-      const theme = document.getElementById('themeSelect').value;
-      const notifEnabled = document.getElementById('notifToggle').checked;
-      alert('⚙️ Settings saved!');
-    }
-
-    // Profile
-    function saveProfile() {
-      const name = document.getElementById('profileName').value;
-      alert("👤 Profile saved!");
-    }
-
-    // Receive data from Telegram bot (simulate points update)
-    Telegram.WebApp.onEvent('mainButtonClicked', () => {
-      balance += 10;
-      tasksDone += 1;
-      addToHistory("Added 10 points from Telegram main button");
-      updateHome();
-    });
-
+// Tasks
+function joinChannel(){
+  const channel="@YourChannel";
+  Telegram.WebApp.openLink(https://t.me/${channel.replace('@','')});
+  setTimeout(()=>{
+    balance += 10;
+    tasksDone++;
+    document.getElementById("joinStatus").innerText = "✅ Joined!";
     updateHome();
-    renderHistory();
-    renderReferrals();
-    updateMiningUI();
-  </script>
+  },3000);
+}
 
+function watchAd(points){
+  if(typeof show_9754867 !== 'function'){
+    alert("Ad system not ready");
+    return;
+  }
+  show_9754867('reward').then(()=>{
+    balance += points;
+    tasksDone++;
+    updateHome();
+  }).catch(()=>alert("Ad failed"));
+}
+
+function claimDailyBonus(){
+  const today=new Date().toDateString();
+  if(localStorage.getItem("dailyBonus")==today){alert("Already claimed today"); return;}
+  const bonus = Math.floor(Math.random()*300)+100;
+  balance += bonus;
+  tasksDone++;
+  localStorage.setItem("dailyBonus", today);
+  alert(🎁 Daily Bonus: ${bonus} coins!);
+  updateHome();
+}
+
+function withdrawPoints(){
+  const wallet=document.getElementById("walletAddress").value.trim();
+  if(!wallet){alert("Enter wallet address"); return;}
+  if(balance<1000){alert("Minimum 1000 coins required"); return;}
+  alert(✅ Withdraw request of ${balance} coins sent to ${wallet});
+  balance = 0;
+  updateHome();
+}
+
+updateHome();
+</script>
 </body>
 </html>
