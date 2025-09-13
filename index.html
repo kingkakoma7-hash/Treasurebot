@@ -1,4 +1,62 @@
-<p>Watch ads to earn points!</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treasure Bot Beta</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="//libtl.com/sdk.js" data-zone="9754867" data-sdk="show_9754867"></script>
+<style>
+  body {margin:0;font-family:'Segoe UI',sans-serif;background:linear-gradient(120deg,#0f2027,#203a43,#2c5364);color:#fff;display:flex;flex-direction:column;height:100vh;}
+  .section{flex:1;padding:18px;display:none;overflow-y:auto;backdrop-filter:blur(8px) brightness(1.08);border-radius:18px 18px 0 0;box-shadow:0 0 30px rgba(0,0,0,0.25);}
+  .section.active{display:block;animation:fadeIn .6s ease-in-out;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .card{background:rgba(255,255,255,.07);padding:13px;border-radius:15px;margin-bottom:12px;font-size:15px;box-shadow:0 2px 10px rgba(0,255,150,.1);}
+  .btn{display:flex;justify-content:center;align-items:center;background:linear-gradient(90deg,#00ff9d,#00d4ff);color:#000;font-weight:bold;padding:10px;border-radius:12px;font-size:18px;cursor:pointer;transition:all .2s;}
+  .btn:active{transform:scale(.95);box-shadow:0 0 15px rgba(0,255,150,.7);}
+  nav{display:flex;justify-content:space-around;background:rgba(0,0,0,.4);padding:10px 0;position:sticky;bottom:0;border-radius:0 0 16px 16px;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(0,0,0,.1);}
+  nav button{background:none;border:none;color:#fff;font-size:14px;display:flex;flex-direction:column;align-items:center;cursor:pointer;}
+  nav button span{font-size:18px;}
+  h2{font-size:20px;margin-bottom:10px;font-weight:600;text-shadow:0 2px 10px rgba(0,255,150,.3);}
+  .mine-area{position:relative;width:100%;max-width:400px;margin:0 auto 15px auto;height:180px;background:url('https://i.ibb.co/xGfKJCF/soil-bg.jpg') center/cover;border-radius:18px;overflow:hidden;box-shadow:0 2px 30px rgba(0,255,150,.07);}
+  .pig{position:absolute;left:40%;bottom:20px;width:60px;height:60px;animation:bounce 1.5s infinite alternate;}
+  @keyframes bounce{0%{transform:translateY(0);}100%{transform:translateY(-10px);}}
+  .spark{position:absolute;width:8px;height:8px;background:#fff;border-radius:50%;animation:fly 1s infinite;}
+  @keyframes fly{0%{transform:translateY(0) scale(1);}50%{transform:translateY(-15px) scale(.8);}100%{transform:translateY(0) scale(1);}}
+  .mining-timer{text-align:center;margin-top:8px;font-size:15px;color:#00ff9d;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<!-- Home Section -->
+<div id="home" class="section active">
+  <h2>🏠 Home</h2>
+  <div class="mine-area" id="mineArea">
+    <img src="https://i.ibb.co/0Y5VgGZ/pig-dig.png" class="pig" alt="Pig Digging" />
+    <div id="sparks"></div>
+  </div>
+  <div class="mining-timer" id="miningTimer"></div>
+  <div class="card">
+    <div>💰 Balance: <span id="balance">0</span> coins</div>
+    <div>🎯 Completed Tasks: <span id="tasksDone">0</span></div>
+    <div>👥 Referrals: <span id="referrals">0</span></div>
+  </div>
+  <button class="btn" id="startMiningBtn" onclick="startMining()">⛏️ Start Mining</button>
+  <button class="btn" id="claimMiningBtn" onclick="claimMining()" style="display:none;">💎 Claim</button>
+</div>
+
+<!-- Tasks Section -->
+<div id="tasks" class="section">
+  <h2>📋 Tasks</h2>
+  <div class="card">
+    <img src="https://i.ibb.co/3fJXqW0/join-channel.png" alt="Join" style="width:100%;border-radius:10px;">
+    <p>🔔 Join our Telegram channel to earn extra rewards!</p>
+    <button class="btn" onclick="joinChannel()">📢 Join Channel</button>
+    <div id="joinStatus"></div>
+  </div>
+  <div class="card">
+    <img src="https://i.ibb.co/6YNjBsq/watch-ad.png" alt="Watch Ad" style="width:100%;border-radius:10px;">
+    <p>Watch ads to earn points!</p>
     <button class="btn" onclick="watchAd(75)">▶️ Watch Ad</button>
   </div>
   <div class="card">
@@ -91,7 +149,7 @@ function miningCountdown() {
   let remaining = Math.max(0, Math.floor((miningEndTime - Date.now())/1000));
   let minutes = Math.floor(remaining/60);
   let seconds = remaining % 60;
-  document.getElementById('miningTimer').innerText = ⏳ ${minutes}:${seconds.toString().padStart(2,'0')} remaining;
+  document.getElementById('miningTimer').innerText = `⏳ ${minutes}:${seconds.toString().padStart(2,'0')} remaining`;
   generateSparks();
   if(remaining <= 0) {
     clearInterval(miningInterval);
@@ -120,3 +178,52 @@ function claimMining() {
   document.getElementById('miningTimer').innerText = '';
   updateHome();
 }
+
+// Tasks
+function joinChannel(){
+  const channel="@YourChannel";
+  Telegram.WebApp.openLink(`https://t.me/${channel.replace('@','')}`);
+  setTimeout(()=>{
+    balance += 10;
+    tasksDone++;
+    document.getElementById("joinStatus").innerText = "✅ Joined!";
+    updateHome();
+  },3000);
+}
+
+function watchAd(points){
+  if(typeof show_9754867 !== 'function'){
+    alert("Ad system not ready");
+    return;
+  }
+  show_9754867('reward').then(()=>{
+    balance += points;
+    tasksDone++;
+    updateHome();
+  }).catch(()=>alert("Ad failed"));
+}
+
+function claimDailyBonus(){
+  const today=new Date().toDateString();
+  if(localStorage.getItem("dailyBonus")==today){alert("Already claimed today"); return;}
+  const bonus = Math.floor(Math.random()*300)+100;
+  balance += bonus;
+  tasksDone++;
+  localStorage.setItem("dailyBonus", today);
+  alert(`🎁 Daily Bonus: ${bonus} coins!`);
+  updateHome();
+}
+
+function withdrawPoints(){
+  const wallet=document.getElementById("walletAddress").value.trim();
+  if(!wallet){alert("Enter wallet address"); return;}
+  if(balance<1000){alert("Minimum 1000 coins required"); return;}
+  alert(`✅ Withdraw request of ${balance} coins sent to ${wallet}`);
+  balance = 0;
+  updateHome();
+}
+
+updateHome();
+</script>
+</body>
+</html>
