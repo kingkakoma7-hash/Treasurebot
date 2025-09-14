@@ -465,6 +465,7 @@
     const REF_COUNT_KEY = "acrobat_ref_count";
     const REFERRAL_LEADERBOARD_KEY = "acrobat_ref_lb";
     const MINERS_LEADERBOARD_KEY = "acrobat_miner_lb";
+    const JOINED_CHANNEL_KEY = "acrobat_joined_channel";
 
     let balance = parseFloat(localStorage.getItem(BALANCE_KEY) || "0");
     let miningPower = parseInt(localStorage.getItem(MINING_POWER_KEY) || "1");
@@ -577,16 +578,30 @@
       alert("🎉 Daily login rewarded +1 Nova!");
     };
 
-    document.getElementById('joinChannelBtn').onclick = () => {
+    // --- Join Channel Button Logic (Working!) ---
+    const joinChannelBtn = document.getElementById('joinChannelBtn');
+    function setJoinedChannelUI() {
+      joinChannelBtn.textContent = "Joined";
+      joinChannelBtn.disabled = true;
+    }
+    // On load, check if already joined
+    if (localStorage.getItem(JOINED_CHANNEL_KEY) === "true") {
+      setJoinedChannelUI();
+    }
+    joinChannelBtn.onclick = () => {
+      if (joinChannelBtn.disabled) return;
       window.open("https://t.me/+1tUOovwjpJ83MGZk", "_blank");
       setTimeout(() => {
         balance += 2;
         localStorage.setItem(BALANCE_KEY, balance);
         updateBalanceUI();
         updateMinerLeaderboard("You", balance);
+        setJoinedChannelUI();
+        localStorage.setItem(JOINED_CHANNEL_KEY, "true");
         alert("✅ Joined & rewarded +2 Nova!");
       }, 2000);
     };
+    // --- End Join Channel Button Logic ---
 
     // SHOP
     document.getElementById('buyMiningPower').onclick = () => {
